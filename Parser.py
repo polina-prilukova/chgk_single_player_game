@@ -3,6 +3,15 @@ import requests
 import re
 
 
+class Package_chgk(object):
+    def __init__(self):
+        self.title = ''
+        self.question_list = []
+        self.date = ''
+        self.correctors = ''
+        self.current_question = 0
+
+
 class Question_chgk(object):
     # def __init__(self, number, question_text, answer, pass_criteria, comments, sources, author):
     def __init__(self):
@@ -14,7 +23,7 @@ class Question_chgk(object):
         self.sources = ''
         self.author = ''
 
-    def find_tag_by_class_and_fill_question(self, class_name, attribute_name):
+    def find_tag_by_class_and_fill_question(self, class_name, attribute_name, tag):
         new_tag = tag.find('strong', attrs={'class': class_name})
         if new_tag:
             for new_str in new_tag.next_siblings:
@@ -32,91 +41,94 @@ class Question_chgk(object):
                     elif attribute_name == 'author':
                         self.author += new_str.strip()
 
+
 class Game(object):
     def __init__(self):
         self.is_on = True
 
+def define_tour_number_and_question_number(question_number):
+    t_number, q_number = question_number.split('-')
+    return t_number, q_number
 
-# headers = requests.utils.default_headers()
-# headers.update({'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/69.0'})
 
-url = "https://db.chgk.info/tour/ligavuz19.1_u"
-req = requests.get(url)
-soup = BeautifulSoup(req.content, 'html.parser')
+def check_if_package_correct(package):
+    # проверим, что пакет корректный. Т.е. у всех вопросов пакета как минимум есть вопрос и есть ответ
+    is_correct = True
+    error_string = ''
+    for q in package:
+        if not q.question_text:
+            error_string += f'Вопрос №{q.number} не содержит вопроса \n'
+            is_correct = False
+        if not q.answer:
+            error_string = f'Вопрос №{q.number} не содержит ответа \n'
+            is_correct = False
 
-counter = 0
+    if not is_correct:
+        error_string += 'Пакет не корректный, проверьте выгрузку'
+        print(error_string)
 
-id_question_header = url.split('/')[-1]
 
-package = []
+def parse_url(url):
+    # url = "https://db.chgk.info/tour/ligavuz19.1_u"
+    # headers = requests.utils.default_headers()
+    # headers.update({'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/69.0'})
+    req = requests.get(url)
+    soup = BeautifulSoup(req.content, 'html.parser')
 
-# для источника db.chgk.info
-# поиск нужных тегов с html-страницы
-for tag in soup.find_all('div', attrs={'class': 'question'}):
-    new_question = Question_chgk()
-    new_question.number = tag['id'].replace(id_question_header + '.', '')
+    id_question_header = url.split('/')[-1]
 
-    # TODO обработка изображений - раздаточных материалов
-    new_question.find_tag_by_class_and_fill_question('Question', 'question_text')
-    new_question.find_tag_by_class_and_fill_question('Answer', 'answer')
-    new_question.find_tag_by_class_and_fill_question('PassCriteria', 'pass_criteria')
-    new_question.find_tag_by_class_and_fill_question('Comments', 'comments')
-    new_question.find_tag_by_class_and_fill_question('Sources', 'sources')
-    new_question.find_tag_by_class_and_fill_question('Authors', 'author')
+    pack = Package_chgk()
 
-    # new_question.remove_spaces()
+    # для источника db.chgk.info
+    # поиск нужных тегов с html-страницы
+    for tag in soup.find_all('div', attrs={'class': 'question'}):
+        new_question = Question_chgk()
+        new_question.number = tag['id'].replace(id_question_header + '.', '')
 
-    package.append(new_question)
+        # TODO обработка изображений - раздаточных материалов
+        new_question.find_tag_by_class_and_fill_question('Question', 'question_text', tag)
+        new_question.find_tag_by_class_and_fill_question('Answer', 'answer', tag)
+        new_question.find_tag_by_class_and_fill_question('PassCriteria', 'pass_criteria', tag)
+        new_question.find_tag_by_class_and_fill_question('Comments', 'comments', tag)
+        new_question.find_tag_by_class_and_fill_question('Sources', 'sources', tag)
+        new_question.find_tag_by_class_and_fill_question('Authors', 'author', tag)
 
-# проверим, что пакет корректный. Т.е. у всех вопросов пакета как минимум есть вопрос и есть ответ
-is_correct = True
-error_string = ''
-for question in package:
-    if not question.question_text:
-        error_string += f'Вопрос №{question.number} не содержит вопроса \n'
-        is_correct = False
-    if not question.answer:
-        error_string = f'Вопрос №{question.number} не содержит ответа \n'
-        is_correct = False
+        pack.question_list.append(new_question)
 
-if not is_correct:
-    error_string += 'Пакет не корректный, проверьте выгрузку'
-    print(error_string)
+    # check_if_package_correct(pack.question_list)
+    return pack
 
-# запишем полученные данные в файл
-with open('test.txt', 'w', encoding='UTF-8') as f:
-    f.write(soup.title.text)
-    f.write('\n')
-    for question in package:
-        f.write('Вопрос №' + question.number + ':')
+
+def write_package_to_txt(package):
+    # запишем полученные данные в файл
+    with open('test.txt', 'w', encoding='UTF-8') as f:
+        # f.write(soup.title.text)
         f.write('\n')
-        f.write(question.question_text)
-        f.write('\n')
-        f.write('Ответ: ')
-        f.write(question.answer)
-        f.write('\n')
-        if question.pass_criteria:
-            f.write('Зачет: ')
-            f.write(question.pass_criteria)
+        for question in package:
+            f.write('Вопрос №' + question.number + ':')
             f.write('\n')
-        if question.comments:
-            f.write('Комментарий: ')
-            f.write(question.comments)
+            f.write(question.question_text)
             f.write('\n')
-        if question.sources:
-            f.write('Источник: ')
-            f.write(question.sources)
+            f.write('Ответ: ')
+            f.write(question.answer)
             f.write('\n')
-        if question.author:
-            f.write('Автор: ')
-            f.write(question.author)
+            if question.pass_criteria:
+                f.write('Зачет: ')
+                f.write(question.pass_criteria)
+                f.write('\n')
+            if question.comments:
+                f.write('Комментарий: ')
+                f.write(question.comments)
+                f.write('\n')
+            if question.sources:
+                f.write('Источник: ')
+                f.write(question.sources)
+                f.write('\n')
+            if question.author:
+                f.write('Автор: ')
+                f.write(question.author)
+                f.write('\n')
+
             f.write('\n')
-
-        f.write('\n')
-    f.close()
-print('Файл записан')
-
-
-
-
-
+        f.close()
+    print('Файл записан')
