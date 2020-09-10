@@ -22,6 +22,7 @@ class Question_chgk(object):
         self.comments = ''
         self.sources = ''
         self.author = ''
+        self.is_answered = False
 
     def find_tag_by_class_and_fill_question(self, class_name, attribute_name, tag):
         new_tag = tag.find('strong', attrs={'class': class_name})
@@ -46,9 +47,9 @@ class Game(object):
     def __init__(self):
         self.is_on = True
 
-def define_tour_number_and_question_number(question_number):
+def get_tour_number_and_question_number(question_number):
     t_number, q_number = question_number.split('-')
-    return t_number, q_number
+    return int(t_number), int(q_number)
 
 
 def check_if_package_correct(package):

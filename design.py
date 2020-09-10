@@ -90,6 +90,8 @@ class Ui_MainWindow(object):
         self.previous_btn.setIcon(icon)
         self.previous_btn.setIconSize(QtCore.QSize(30, 16))
         self.previous_btn.setObjectName("previous_btn")
+        self.previous_btn.setEnabled(False)
+
         self.pause_btn = QtWidgets.QPushButton(self.control_frame)
         self.pause_btn.setGeometry(QtCore.QRect(80, 40, 61, 41))
         font = QtGui.QFont()
@@ -123,9 +125,16 @@ class Ui_MainWindow(object):
         font.setPointSize(9)
         self.result_label.setFont(font)
         self.result_label.setObjectName("result_label")
-        self.results_tableView = QtWidgets.QTableView(self.result_frame)
-        self.results_tableView.setGeometry(QtCore.QRect(0, 30, 142, 321))
-        self.results_tableView.setObjectName("results_tableView")
+
+        self.results_table = QtWidgets.QTableWidget(self.result_frame)
+        self.results_table.setGeometry(QtCore.QRect(0, 30, 142, 321))
+        self.results_table.setObjectName("results_table")
+
+        # self.results_tableView = QtWidgets.QTableView(self.result_frame)
+        # self.results_tableView.setGeometry(QtCore.QRect(0, 30, 142, 321))
+        # self.results_tableView.setObjectName("results_tableView")
+        # self.results_tableView.setEnabled(False)
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 637, 21))
