@@ -1,11 +1,11 @@
 import sys
 from PyQt5 import QtWidgets, QtCore, QtGui
-
-import design
+# import design
+import design_2
 import Parser
 
 
-class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
+class ExampleApp(QtWidgets.QMainWindow, design_2.Ui_MainWindow):
 
     def __init__(self):
         super().__init__()
@@ -14,14 +14,13 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.q_pack = []
 
         self.timer_running = False
-        # self.default_seconds = 60
         self.timer_seconds = 60
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.show_timer)
 
-        self.question_frame.setVisible(False)
-        self.answer_frame.setVisible(False)
-        self.result_frame.setVisible(False)
+        # self.question_frame.setVisible(False)
+        # self.answer_frame.setVisible(False)
+        # self.result_frame.setVisible(False)
         # self.control_frame.setVisible(False)
 
         self.start_btn.clicked.connect(self.start_game)
@@ -48,6 +47,9 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.timer_label.setText(str(self.timer_seconds))
             self.timer_seconds -= 1
 
+        if self.timer_seconds == -1:
+            self.show_answer()
+
     def timer_start_pause(self):
         self.timer_running = not self.timer_running
         if self.timer_running:
@@ -57,9 +59,10 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def timer_reset(self):
         self.timer_running = False
+        self.timer.stop()
         self.timer_seconds = 60
-        self.show_timer()
-
+        self.timer_label.setText('')
+        # self.show_timer()
 
 
     def state_changed(self):
@@ -72,26 +75,31 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         if q_number == 0:
             return
         t_index = t_number - 1
-        q_index = int(q_number - 1) % self.results_table.rowCount()
+        # q_index = int(q_number - 1) % self.results_table.rowCount()
+        q_index = int(q_number - 1) % self.results_table.columnCount()
         if self.is_answered_checkBox.isChecked():
-            self.results_table.item(q_index, t_index).setText('+')
+            self.results_table.item(t_index, q_index).setText('+')
         else:
-            self.results_table.item(q_index, t_index).setText('-')
+            self.results_table.item(t_index, q_index).setText('-')
 
     def create_results_table(self):
         # TODO проверить https://db.chgk.info/tour/zemli20.3_u выводится таблица 4*9 вместо 3*12
         tours_number = int(max(set([x.number.split('-')[0] for x in self.q_pack.question_list])))
         questions_in_tour = int(len(self.q_pack.question_list)/tours_number)
 
-        self.results_table.setColumnCount(tours_number)
-        self.results_table.setRowCount(questions_in_tour)
+        # self.results_table.setColumnCount(tours_number)
+        # self.results_table.setRowCount(questions_in_tour)
+        self.results_table.setColumnCount(questions_in_tour)
+        self.results_table.setRowCount(tours_number)
         self.results_table.resizeColumnsToContents()
         self.results_table.resizeRowsToContents()
-        for tour in range(0, tours_number):
-            for question in range(0, questions_in_tour):
+        # for tour in range(0, tours_number):
+        #     for question in range(0, questions_in_tour):
+        for question in range(0, questions_in_tour):
+            for tour in range(0, tours_number):
                 item = QtWidgets.QTableWidgetItem()
                 item.setText('-')
-                self.results_table.setItem(question, tour, item)
+                self.results_table.setItem(tour,question, item)
 
     def show_question(self, current_question):
         t_number, q_number = Parser.get_tour_number_and_question_number(current_question.number)
@@ -102,6 +110,7 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.is_answered_checkBox.setChecked(current_question.is_answered)
 
     def show_answer(self):
+        self.timer.stop()
         current_question = self.q_pack.question_list[self.q_pack.current_question]
         self.answer_textEdit.append('Ответ: ' + current_question.answer)
         if current_question.pass_criteria:
@@ -125,6 +134,7 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.next_btn.setEnabled(True)
 
     def show_previous_question(self):
+        self.timer_reset()
         self.question_textEdit.clear()
         self.answer_textEdit.clear()
         self.q_pack.current_question -= 1
@@ -132,6 +142,7 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.check_first_last_questions()
 
     def show_next_question(self):
+        self.timer_reset()
         self.question_textEdit.clear()
         self.answer_textEdit.clear()
         self.q_pack.current_question += 1
