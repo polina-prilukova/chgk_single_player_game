@@ -1,9 +1,9 @@
 import sys
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import Qt
+from PyQt5 import QtWidgets, QtCore, QtGui
+
 import design
 import Parser
-from Parser import Question_chgk, Package_chgk
+
 
 class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
@@ -13,21 +13,54 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
         self.q_pack = []
 
+        self.timer_running = False
+        # self.default_seconds = 60
+        self.timer_seconds = 60
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.show_timer)
+
         self.question_frame.setVisible(False)
         self.answer_frame.setVisible(False)
         self.result_frame.setVisible(False)
-        self.control_frame.setVisible(False)
+        # self.control_frame.setVisible(False)
 
         self.start_btn.clicked.connect(self.start_game)
         self.previous_btn.clicked.connect(self.show_previous_question)
         self.next_btn.clicked.connect(self.show_next_question)
         self.show_answer_btn.clicked.connect(self.show_answer)
+        self.pause_btn.clicked.connect(self.timer_start_pause)
 
         self.is_answered_checkBox.stateChanged.connect(self.state_changed)
 
         self.previous_btn.setToolTip('Предыдущий вопрос')
         self.next_btn.setToolTip('Следующий вопрос')
         self.pause_btn.setToolTip('Пауза/продолжить')
+
+    def show_timer(self):
+        pal = self.timer_label.palette()
+
+        if self.timer_seconds >= 0:
+            if self.timer_seconds <= 10:
+                pal.setColor(QtGui.QPalette.WindowText, QtGui.QColor("red"))
+            else:
+                pal.setColor(QtGui.QPalette.WindowText, QtGui.QColor("black"))
+            self.timer_label.setPalette(pal)
+            self.timer_label.setText(str(self.timer_seconds))
+            self.timer_seconds -= 1
+
+    def timer_start_pause(self):
+        self.timer_running = not self.timer_running
+        if self.timer_running:
+            self.timer.start(1000)
+        else:
+            self.timer.stop()
+
+    def timer_reset(self):
+        self.timer_running = False
+        self.timer_seconds = 60
+        self.show_timer()
+
+
 
     def state_changed(self):
         if self.is_answered_checkBox.isChecked():
@@ -36,6 +69,8 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.q_pack.question_list[self.q_pack.current_question].is_answered = False
         t_number, q_number = Parser.get_tour_number_and_question_number(
             self.q_pack.question_list[self.q_pack.current_question].number)
+        if q_number == 0:
+            return
         t_index = t_number - 1
         q_index = int(q_number - 1) % self.results_table.rowCount()
         if self.is_answered_checkBox.isChecked():
@@ -44,6 +79,7 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.results_table.item(q_index, t_index).setText('-')
 
     def create_results_table(self):
+        # TODO проверить https://db.chgk.info/tour/zemli20.3_u выводится таблица 4*9 вместо 3*12
         tours_number = int(max(set([x.number.split('-')[0] for x in self.q_pack.question_list])))
         questions_in_tour = int(len(self.q_pack.question_list)/tours_number)
 
@@ -56,7 +92,6 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
                 item = QtWidgets.QTableWidgetItem()
                 item.setText('-')
                 self.results_table.setItem(question, tour, item)
-
 
     def show_question(self, current_question):
         t_number, q_number = Parser.get_tour_number_and_question_number(current_question.number)
@@ -75,8 +110,9 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.answer_textEdit.append('Комментарий: ' + current_question.comments)
         if current_question.sources:
             self.answer_textEdit.append('Источник: ' + current_question.sources)
-        if current_question.author:
-            self.answer_textEdit.append('Автор: ' + current_question.author)
+        # TODO в базе автор может быть ссылкой. В этом случае текст ФИО не выводится, исправить
+        # if current_question.author:
+        #     self.answer_textEdit.append('Автор: ' + current_question.author)
 
     def check_first_last_questions(self):
         if self.q_pack.current_question == 0:
@@ -96,13 +132,6 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.check_first_last_questions()
 
     def show_next_question(self):
-        # t_number, q_number = Parser.get_tour_number_and_question_number(self.q_pack.question_list[self.q_pack.current_question].number)
-        # t_index = t_number - 1
-        # q_index = int(q_number - 1)%self.results_table.rowCount()
-        # if self.is_answered_checkBox.isChecked():
-        #     self.results_table.item(q_index, t_index).setText('+')
-        # else:
-        #     self.results_table.item(q_index, t_index).setText('-')
         self.question_textEdit.clear()
         self.answer_textEdit.clear()
         self.q_pack.current_question += 1
@@ -126,7 +155,6 @@ class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
             try:
                 self.show_question(self.q_pack.question_list[self.q_pack.current_question])
-
             except:
                 self.question_textEdit.setText("Что-то не так")
 

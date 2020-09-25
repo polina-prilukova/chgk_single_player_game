@@ -7,6 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import tkinter
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -80,6 +81,8 @@ class Ui_MainWindow(object):
         self.minute_progressBar.setInputMethodHints(QtCore.Qt.ImhNone)
         self.minute_progressBar.setProperty("value", 24)
         self.minute_progressBar.setObjectName("minute_progressBar")
+
+        self.minute_progressBar.setVisible(False)
         self.previous_btn = QtWidgets.QPushButton(self.control_frame)
         self.previous_btn.setGeometry(QtCore.QRect(10, 50, 61, 41))
         font = QtGui.QFont()
@@ -121,7 +124,9 @@ class Ui_MainWindow(object):
         self.show_answer_btn.setFont(font)
         self.show_answer_btn.setText("Показать ответ")
         self.show_answer_btn.setObjectName("show_answer_btn")
+
         self.timer_label = QtWidgets.QLabel(self.control_frame)
+        # self.timer_label = tkinter.Label(self.control_frame)
         self.timer_label.setGeometry(QtCore.QRect(520, 20, 61, 51))
         font = QtGui.QFont()
         font.setPointSize(15)
@@ -130,6 +135,7 @@ class Ui_MainWindow(object):
         self.timer_label.setFont(font)
         self.timer_label.setText("")
         self.timer_label.setObjectName("timer_label")
+
         self.minute_slider = QtWidgets.QSlider(self.control_frame)
         self.minute_slider.setGeometry(QtCore.QRect(240, 60, 241, 22))
         font = QtGui.QFont()
@@ -137,6 +143,8 @@ class Ui_MainWindow(object):
         self.minute_slider.setFont(font)
         self.minute_slider.setOrientation(QtCore.Qt.Horizontal)
         self.minute_slider.setObjectName("minute_slider")
+
+        self.minute_slider.setVisible(False)
         self.result_frame = QtWidgets.QFrame(self.centralwidget)
         self.result_frame.setGeometry(QtCore.QRect(510, 60, 160, 400))
         self.result_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -152,12 +160,7 @@ class Ui_MainWindow(object):
         self.results_table = QtWidgets.QTableWidget(self.result_frame)
         self.results_table.setGeometry(QtCore.QRect(0, 30, 142, 321))
         self.results_table.setObjectName("results_table")
-        self.results_table.setEnabled(False)
-
-        # self.results_tableView = QtWidgets.QTableView(self.result_frame)
-        # self.results_tableView.setGeometry(QtCore.QRect(0, 30, 142, 321))
-        # self.results_tableView.setObjectName("results_tableView")
-        # self.results_tableView.setEnabled(False)
+        # self.results_table.setEnabled(False)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
