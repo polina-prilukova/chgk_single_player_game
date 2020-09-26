@@ -82,6 +82,12 @@ class ExampleApp(QtWidgets.QMainWindow, design_2.Ui_MainWindow):
         else:
             self.results_table.item(t_index, q_index).setText('-')
 
+        total_answers = len([quest for quest in self.q_pack.question_list if quest.is_answered])
+        if total_answers == 0:
+            self.show_results_label.setText('')
+        else:
+            self.show_results_label.setText('Всего ответов: ' + str(total_answers))
+
     def create_results_table(self):
         # TODO проверить https://db.chgk.info/tour/zemli20.3_u выводится таблица 4*9 вместо 3*12
         tours_number = int(max(set([x.number.split('-')[0] for x in self.q_pack.question_list])))
@@ -104,13 +110,16 @@ class ExampleApp(QtWidgets.QMainWindow, design_2.Ui_MainWindow):
     def show_question(self, current_question):
         t_number, q_number = Parser.get_tour_number_and_question_number(current_question.number)
         self.question_textEdit.setStyleSheet("fontName=Times-Bold")
+        self.question_textEdit.append('Тур ' + str(t_number))
         self.question_textEdit.append('Вопрос №' + str(q_number) + ':')
         self.question_textEdit.setStyleSheet("fontName=Times")
         self.question_textEdit.append(current_question.question_text)
+        self.question_textEdit.moveCursor(QtGui.QTextCursor.Start)
         self.is_answered_checkBox.setChecked(current_question.is_answered)
 
     def show_answer(self):
         self.timer.stop()
+        self.answer_textEdit.setText('')
         current_question = self.q_pack.question_list[self.q_pack.current_question]
         self.answer_textEdit.append('Ответ: ' + current_question.answer)
         if current_question.pass_criteria:
@@ -122,6 +131,9 @@ class ExampleApp(QtWidgets.QMainWindow, design_2.Ui_MainWindow):
         # TODO в базе автор может быть ссылкой. В этом случае текст ФИО не выводится, исправить
         # if current_question.author:
         #     self.answer_textEdit.append('Автор: ' + current_question.author)
+
+        self.answer_textEdit.moveCursor(QtGui.QTextCursor.Start)
+
 
     def check_first_last_questions(self):
         if self.q_pack.current_question == 0:
@@ -166,6 +178,7 @@ class ExampleApp(QtWidgets.QMainWindow, design_2.Ui_MainWindow):
 
             try:
                 self.show_question(self.q_pack.question_list[self.q_pack.current_question])
+                self.game_header_label.setText(f'{self.q_pack.title}, {self.q_pack.date}')
             except:
                 self.question_textEdit.setText("Что-то не так")
 

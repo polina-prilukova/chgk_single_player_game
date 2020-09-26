@@ -80,6 +80,14 @@ def parse_url(url):
 
     pack = Package_chgk()
 
+    try:
+        pack.title = soup.find('h1', attrs={'class': 'title'}).text
+        pack.date = soup.find(lambda tag: tag.name == 'p' and 'Дата:' in tag.text).text.replace('Дата:', '')
+        pack.correctors =  soup.find('div', attrs={'class': 'editor'}).text
+    except:
+        # TODO обработка ошибок
+        pass
+
     # для источника db.chgk.info
     # поиск нужных тегов с html-страницы
     for tag in soup.find_all('div', attrs={'class': 'question'}):
