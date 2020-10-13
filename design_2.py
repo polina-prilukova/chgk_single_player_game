@@ -9,7 +9,8 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from PIL import ImageTk, Image
+import tkinter as tk
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -18,7 +19,7 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.start_frame = QtWidgets.QFrame(self.centralwidget)
-        self.start_frame.setGeometry(QtCore.QRect(10, 10, 701, 61))
+        self.start_frame.setGeometry(QtCore.QRect(10, 7, 701, 64))
         self.start_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.start_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.start_frame.setObjectName("start_frame")
@@ -43,7 +44,7 @@ class Ui_MainWindow(object):
         self.url_lineEdit.setFont(font)
         self.url_lineEdit.setObjectName("url_lineEdit")
         self.game_header_label = QtWidgets.QLabel(self.start_frame)
-        self.game_header_label.setGeometry(QtCore.QRect(10, 40, 691, 16))
+        self.game_header_label.setGeometry(QtCore.QRect(10, 34, 691, 30))
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setBold(True)
@@ -179,3 +180,28 @@ class Ui_MainWindow(object):
         # self.show_results_label.setText(_translate("MainWindow", "Всего ответов:"))
         # self.timer_label.setText(_translate("MainWindow", "60"))
         self.is_answered_checkBox.setText(_translate("MainWindow", "Я ответил правильно"))
+
+
+# class Razdatka_Window():
+#     def __init__(self):
+#         self.root = tk.Tk()
+#         self.panel = tk.Label(self.root)
+#         self.url=''
+#
+#     def create_window(self):
+#         self.root.title = 'Razdatka'
+#         self.panel.configure(text='test2')
+#         self.panel.pack()
+#         self.root.mainloop()
+#
+#     def hide(self):
+#         self.root.withdraw()
+#
+#     def quit(self):
+#         self.root.destroy()
+# #         TODO в момент закрытия основного приложения закрывать вспомогательное
+#
+#     def show(self):
+#         self.root.deiconify()
+
+

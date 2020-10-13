@@ -2,6 +2,8 @@ import sys
 from PyQt5 import QtWidgets, QtCore, QtGui
 # import design
 import design_2
+import requests
+from PIL import Image
 import Parser
 
 
@@ -11,7 +13,8 @@ class ExampleApp(QtWidgets.QMainWindow, design_2.Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
 
-        self.q_pack = []
+        self.q_pack = None
+        self.razdatka_window = None
 
         self.timer_running = False
         self.timer_seconds = 60
@@ -64,7 +67,6 @@ class ExampleApp(QtWidgets.QMainWindow, design_2.Ui_MainWindow):
         self.timer_label.setText('')
         # self.show_timer()
 
-
     def state_changed(self):
         if self.is_answered_checkBox.isChecked():
             self.q_pack.question_list[self.q_pack.current_question].is_answered = True
@@ -91,7 +93,7 @@ class ExampleApp(QtWidgets.QMainWindow, design_2.Ui_MainWindow):
     def create_results_table(self):
         # TODO проверить https://db.chgk.info/tour/zemli20.3_u выводится таблица 4*9 вместо 3*12
         tours_number = int(max(set([x.number.split('-')[0] for x in self.q_pack.question_list])))
-        questions_in_tour = int(len(self.q_pack.question_list)/tours_number)
+        questions_in_tour = int(len(self.q_pack.question_list) / tours_number)
 
         # self.results_table.setColumnCount(tours_number)
         # self.results_table.setRowCount(questions_in_tour)
@@ -105,15 +107,24 @@ class ExampleApp(QtWidgets.QMainWindow, design_2.Ui_MainWindow):
             for tour in range(0, tours_number):
                 item = QtWidgets.QTableWidgetItem()
                 item.setText('-')
-                self.results_table.setItem(tour,question, item)
+                self.results_table.setItem(tour, question, item)
 
     def show_question(self, current_question):
         t_number, q_number = Parser.get_tour_number_and_question_number(current_question.number)
         self.question_textEdit.setStyleSheet("fontName=Times-Bold")
         self.question_textEdit.append('Тур ' + str(t_number))
         self.question_textEdit.append('Вопрос №' + str(q_number) + ':')
+        if current_question.razdatka_text:
+            self.question_textEdit.append('Раздаточный материал: [')
+            self.question_textEdit.append(current_question.razdatka_text.strip('\n'))
+            self.question_textEdit.append(']')
+
+        if current_question.razdatka_url:
+            img = Image.open(requests.get(current_question.razdatka_url, stream=True).raw)
+            img.show()
+
         self.question_textEdit.setStyleSheet("fontName=Times")
-        self.question_textEdit.append(current_question.question_text)
+        self.question_textEdit.append(current_question.question_text.strip())
         self.question_textEdit.moveCursor(QtGui.QTextCursor.Start)
         self.is_answered_checkBox.setChecked(current_question.is_answered)
 
@@ -133,7 +144,6 @@ class ExampleApp(QtWidgets.QMainWindow, design_2.Ui_MainWindow):
         #     self.answer_textEdit.append('Автор: ' + current_question.author)
 
         self.answer_textEdit.moveCursor(QtGui.QTextCursor.Start)
-
 
     def check_first_last_questions(self):
         if self.q_pack.current_question == 0:

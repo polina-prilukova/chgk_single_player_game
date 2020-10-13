@@ -23,24 +23,40 @@ class Question_chgk(object):
         self.sources = ''
         self.author = ''
         self.is_answered = False
+        self.razdatka_text = ''
+        self.razdatka_url = ''
 
-    def find_tag_by_class_and_fill_question(self, class_name, attribute_name, tag):
-        new_tag = tag.find('strong', attrs={'class': class_name})
-        if new_tag:
-            for new_str in new_tag.next_siblings:
-                if isinstance(new_str, str):
-                    if attribute_name == 'question_text':
-                        self.question_text += new_str.strip() + '\n'
-                    elif attribute_name == 'answer':
-                        self.answer += new_str.strip()
-                    elif attribute_name == 'pass_criteria':
-                        self.pass_criteria += new_str.strip()
-                    elif attribute_name == 'comments':
-                        self.comments += new_str.strip()
-                    elif attribute_name == 'sources':
-                        self.sources += new_str.strip()
-                    elif attribute_name == 'author':
-                        self.author += new_str.strip()
+
+    def find_tag_by_class_and_fill_question(self, class_name, attribute_name, tag, razdatka=False):
+        if not razdatka:
+            new_tag = tag.find('strong', attrs={'class': class_name})
+            if new_tag:
+                for new_str in new_tag.next_siblings:
+                    if isinstance(new_str, str):
+                        if attribute_name == 'question_text':
+                            self.question_text += new_str.strip() + '\n'
+                        elif attribute_name == 'answer':
+                            self.answer += new_str.strip()
+                        elif attribute_name == 'pass_criteria':
+                            self.pass_criteria += new_str.strip()
+                        elif attribute_name == 'comments':
+                            self.comments += new_str.strip()
+                        elif attribute_name == 'sources':
+                            self.sources += new_str.strip()
+                        elif attribute_name == 'author':
+                            self.author += new_str.strip()
+        else:
+            new_tag = tag.find('div', attrs={'class': class_name})
+            if new_tag:
+                for new_str in new_tag.next_siblings:
+                    if isinstance(new_str, str):
+                        if attribute_name == 'razdatka_text':
+                            self.razdatka_text += new_str.strip() + '\n'
+            new_tag = tag.find('img')
+            if new_tag:
+                self.razdatka_url = new_tag.attrs.get('src','')
+
+
 
 
 class Game(object):
@@ -101,6 +117,8 @@ def parse_url(url):
         new_question.find_tag_by_class_and_fill_question('Comments', 'comments', tag)
         new_question.find_tag_by_class_and_fill_question('Sources', 'sources', tag)
         new_question.find_tag_by_class_and_fill_question('Authors', 'author', tag)
+
+        new_question.find_tag_by_class_and_fill_question('razdatka_header', 'razdatka_text', tag, True)
 
         pack.question_list.append(new_question)
 
